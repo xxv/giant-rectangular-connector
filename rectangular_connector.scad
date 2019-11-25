@@ -1,3 +1,5 @@
+include <shapes.scad>;
+
 spacing = 25.4;
 
 smidge = 0.01;
@@ -13,14 +15,26 @@ wall = 3.9;
 cutout_offset = 5;
 inside_cutout = [spacing - wall*2, spacing - wall*2, housing_height - cutout_offset + smidge];
 
+led_lead = 5.3;
 
 $fa=0.5;
 $fs=0.5;
 
-rectangular_housing();
 
-% translate([0, 0, -50])
-  led();
+module mockup() {
+  color("#333")
+    rectangular_housing();
+
+  % translate([0, 0, -50])
+    led();
+
+  color("gold") {
+      translate([-spacing/2, 0, 5])
+        pin_clamp();
+      translate([spacing/2, 0, 5])
+        pin_clamp();
+        }
+}
 
 module rectangular_housing() {
   difference() {
@@ -70,12 +84,77 @@ module rectangular_housing() {
       }
 }
 
+module pin_clamp() {
+  clamp_height = 60;
+  clamp_wall = 2;
+
+  clamp_size = [inside_cutout.x - 0.5, inside_cutout.y - 2, clamp_height];
+  clamp_cutout = [clamp_size.x, clamp_size.y, clamp_height]- [clamp_wall * 2, clamp_wall * 2, -smidge * 2];
+
+  difference() {
+    translate([-clamp_size.x/2, -clamp_size.y/2, 0])
+      rounded_cube(clamp_size, 2);
+    translate([-led_lead/2, -led_lead/2,-smidge])
+      cube([led_lead, led_lead, clamp_height + smidge * 2]);
+
+    translate([0, 0, 40])
+      union() {
+        translate([-clamp_size.x/2 - smidge, clamp_size.y/2 - clamp_wall * 4, 0])
+          difference() {
+            rotate([0, 90, 0])
+              rounded_cube([25, clamp_size.y + smidge * 2, clamp_size.x + smidge * 2], 2);
+            translate([clamp_size.x/2-led_lead/2,clamp_wall * 1 -led_lead/2,-33-smidge])
+              cube([led_lead, led_lead +1.2, clamp_height + smidge * 2]);
+          }
+        translate([0, clamp_size.y/2, 33])
+          translate([-10, -clamp_wall*2, -33-smidge])
+            cube([20, 8+smidge, 14+smidge]);
+        *translate([0, clamp_size.y/2, 33])
+          translate([-14, -clamp_wall*2, -36-smidge])
+            cube([20, 8+smidge, 8+smidge]);
+      }
+
+    difference() {
+      translate([-clamp_cutout.x/2, -clamp_cutout.y/2, -smidge])
+        rounded_cube(clamp_cutout, 1);
+      translate([-led_lead/2 + smidge, -inside_cutout.y/2, 0])
+        cube([led_lead - smidge*2, inside_cutout.y, clamp_height]);
+    }
+  }
+
+  translate([0, clamp_size.y/2, 48]) {
+    union() {
+      translate([clamp_size.x/2, 0, 0])
+        rotate([0, 0, 180])
+        tab(clamp_size, clamp_wall);
+      translate([-clamp_size.x/2, -clamp_wall, -8])
+        rotate([180, 0, 0])
+        tab(clamp_size, clamp_wall);
+      }
+  }
+}
+
+module tab(clamp_size, wall) {
+  intersection() {
+    translate([-6, 0, 0])
+    rotate([-90, 0, 0])
+      rounded_cube([20, 8, wall*2 + smidge], 1);
+
+    difference() {
+      translate([0, 0, -clamp_size.z/2])
+        rounded_cube(clamp_size, 2);
+      translate([wall, wall, -clamp_size.z/2 - smidge])
+        rounded_cube(clamp_size - [wall*2, wall*2, 0], 2);
+    }
+  }
+}
+
 module led() {
+  lead = 5.4;
   translate([0, 0, -50])
   cylinder(d=50, h=50);
-  lead = 5.4;
-  translate([25.4/2 - lead/2,0,0])
+  translate([25.4/2 - lead/2,-lead/2,0])
     cube([lead, lead, 155]);
-  translate([-25.4/2 - lead/2,0,0])
+  translate([-25.4/2 - lead/2,-lead/2,0])
     cube([lead, lead, 165]);
 }
