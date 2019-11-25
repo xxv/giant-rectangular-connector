@@ -97,6 +97,12 @@ module pin_clamp() {
     translate([-led_lead/2, -led_lead/2,-smidge])
       cube([led_lead, led_lead, clamp_height + smidge * 2]);
 
+    for (rot=[0, 180])
+      translate([0,0,-3])
+        rotate([10, 0, rot])
+          translate([-led_lead/2, 0, 0])
+            cube([led_lead + smidge * 2, 5, 15]);
+
     translate([0, 0, 40])
       union() {
         translate([-clamp_size.x/2 - smidge, clamp_size.y/2 - clamp_wall * 4, 0])
